@@ -192,12 +192,12 @@ if search_name:
         user_data["Completed"] = user_data["Steps"] >= step_goal
         user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
         
-        # Add clickable proof links
+        # Add clickable proof links and images
         user_data["Proof_Link"] = user_data["Proof"].apply(
-            lambda x: f'<a href="uploads/{x}" target="_blank">View proof</a>' if x and x != "No Proof" else "No Proof"
+            lambda x: f'<a href="uploads/{x}" target="_blank"><img src="uploads/{x}" width="100" height="100"></a>' if x and x != "No Proof" else "No Proof"
         )
         
-        # Display the user data table with clickable proof links
+        # Display the user data table with clickable proof images
         st.markdown(user_data.to_html(escape=False), unsafe_allow_html=True)
     else:
         st.warning("User not found. Try a different name.")
