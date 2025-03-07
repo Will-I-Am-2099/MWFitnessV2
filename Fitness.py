@@ -143,15 +143,13 @@ if leaderboard_view == "Daily":
     show_completed = True  # Show checkmarks and Xs
 else:
     if leaderboard_view == "Weekly":
-        filtered_df = leaderboard_df[leaderboard_df["Timestamp"] >= now - pd.Timedelta(days=7)]
+        start_of_week = now - pd.Timedelta(days=now.weekday())  # Get the start of the current week (Monday)
+        filtered_df = leaderboard_df[leaderboard_df["Timestamp"] >= start_of_week]
     elif leaderboard_view == "Monthly":
         filtered_df = leaderboard_df[leaderboard_df["Timestamp"] >= now - pd.Timedelta(days=30)]
     else:
         filtered_df = leaderboard_df
     show_completed = False  # Hide checkmarks and Xs
-
-# Group by name to sum up steps
-filtered_df = filtered_df.groupby("Name", as_index=False).agg({"Steps": "sum"})
 
 # Only show "Completed" column for Daily view
 if show_completed:
@@ -162,11 +160,11 @@ else:
         filtered_df = filtered_df.drop(columns=["Completed"])  # Remove from Weekly/Monthly
 
 # Sort leaderboard
-filtered_df = filtered_df.sort_values(by="Steps", ascending=False).reset_index(drop=True)
+filtered_df = filtered_df.sort_values(by="Timestamp", ascending=True).reset_index(drop=True)
 filtered_df.insert(0, "Rank", range(1, len(filtered_df) + 1))
 
 # Display leaderboard
-st.table(filtered_df[["Rank", "Name", "Steps"] + (["Completed"] if show_completed else [])])
+st.table(filtered_df[["Rank", "Name", "Steps", "Timestamp"] + (["Completed"] if show_completed else [])])
 
 # Search for user profile
 st.subheader("🔍 Search User Profile")
@@ -203,8 +201,4 @@ if search_name:
             if proof_filename != "No Proof":
                 proof_link = f'<a href="/uploads/{proof_filename}" target="_blank">View proof</a>'
                 st.markdown(proof_link, unsafe_allow_html=True)
-                
-                # Optionally, display the image inline as well
-                st.image(f"uploads/{proof_filename}", caption=f"Proof for {row['Name']} at {timestamp}", use_column_width=True)
-    else:
-        st.warning("No records found for this user. Please try again with a different name.")
+           
