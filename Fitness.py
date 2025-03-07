@@ -107,6 +107,8 @@ if st.button("Submit Steps"):
         completed = steps >= step_goal
 
         # Record the step entry
+        today_date = datetime.now().date()
+        leaderboard_df = leaderboard_df[~((leaderboard_df["Name"] == name) & (leaderboard_df["Timestamp"].dt.date == today_date))]
         new_entry = pd.DataFrame({
             "Name": [name],
             "Steps": [steps],
