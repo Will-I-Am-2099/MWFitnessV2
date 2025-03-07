@@ -194,7 +194,8 @@ if search_name:
             lambda x: f'<a href="uploads/{x}" target="_blank">View proof</a>' if x else "No Proof"
         )
         
-        # Display the user data table
-        st.table(user_data[["Timestamp", "Steps", "Proof", "Completed", "Proof_Link"]])
+        # Display the user data table using markdown for clickable proof links
+        for index, row in user_data.iterrows():
+            st.table(user_data[["Timestamp", "Steps", "Completed", "Proof_Link"]])
     else:
         st.warning("User not found. Try a different name.")
