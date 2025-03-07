@@ -195,6 +195,6 @@ if search_name:
         )
         
         # Display the user data table
-        st.table(user_data[["Timestamp", "Steps", "Proof", "Completed", "Proof_Link"]])
+        st.markdown(user_data.to_html(escape=False), unsafe_allow_html=True)
     else:
         st.warning("User not found. Try a different name.")
