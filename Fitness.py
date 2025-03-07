@@ -28,9 +28,8 @@ if os.path.exists(DATA_FILE):
     # Ensure Timestamp column is in datetime format
     if not leaderboard_df.empty:
         leaderboard_df["Timestamp"] = pd.to_datetime(leaderboard_df["Timestamp"], errors="coerce")
-
-
-leaderboard_df = pd.DataFrame(columns=["Name", "Steps", "Timestamp", "Proof", "Completed"])
+else:
+    leaderboard_df = pd.DataFrame(columns=["Name", "Steps", "Timestamp", "Proof", "Completed"])
 
 # Admin authentication setup
 ADMIN_CREDENTIALS = {"admin": "securepassword123"}  # Change password for security
@@ -106,9 +105,14 @@ if st.button("Submit Steps"):
         # Check if step goal was met
         completed = steps >= step_goal
 
-        # Record the step entry
+        # Ensure Timestamp column is in datetime format
+        leaderboard_df["Timestamp"] = pd.to_datetime(leaderboard_df["Timestamp"], errors="coerce")
+
+        # Exclude relevant entries before the concat operation
         today_date = datetime.now().date()
         leaderboard_df = leaderboard_df[~((leaderboard_df["Name"] == name) & (leaderboard_df["Timestamp"].dt.date == today_date))]
+
+        # Record the step entry
         new_entry = pd.DataFrame({
             "Name": [name],
             "Steps": [steps],
