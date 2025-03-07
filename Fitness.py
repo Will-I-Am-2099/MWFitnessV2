@@ -201,4 +201,9 @@ if search_name:
             if proof_filename != "No Proof":
                 proof_link = f'<a href="/uploads/{proof_filename}" target="_blank">View proof</a>'
                 st.markdown(proof_link, unsafe_allow_html=True)
+                
+                # Optionally, display the image inline as well
+                st.image(f"uploads/{proof_filename}", caption=f"Proof for {row['Name']} at {timestamp}", use_column_width=True)
+    else:
+        st.warning("No records found for this user. Please try again with a different name.")
            
