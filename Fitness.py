@@ -225,14 +225,6 @@ if search_name:
         user_data["Completed"] = user_data["Steps"] >= step_goal
         user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
         st.table(user_data[["Timestamp", "Steps", "Proof", "Completed"]])
-#Add Clickable proof link column
-user_data["Proof_Link"] = user_data["Proof"].apply(
-        lambda x: f'<a href={UPLOAD_DIR}/{x}" target="_blank">View proof</a>' if x and x != "No Proof" else "No Proof"
-    )
-
-    #Converting dataframe to HTML for rendering clickable links
-    st.markdown(user_data[["Timestamp", "Steps", "Proof_Link", "Completed"]].to_html(escape=False, index=False), unsafe_allow_html=True)
-
-    st.table(user_data[["Timestamp", "Steps", "Proof", "Completed", "Proof_Link"]])    
+ 
 else:
     st.warning("User not found. Try a different name.")
