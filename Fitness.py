@@ -29,7 +29,7 @@ if os.path.exists(DATA_FILE):
     if not leaderboard_df.empty:
         leaderboard_df["Timestamp"] = pd.to_datetime(leaderboard_df["Timestamp"], errors="coerce")
 else:
-    leaderboard_df = pd.DataFrame(columns=["Name", "Steps", "Timestamp", "Proof", "Completed"])
+    leaderboard_df = pd.DataFrame(columns=["ID", "Name", "Steps", "Timestamp", "Proof", "Completed"])
 
 # Admin authentication setup
 ADMIN_CREDENTIALS = {"admin": "securepassword123"}  # Change password for security
@@ -112,8 +112,12 @@ if st.button("Submit Steps"):
         today_date = datetime.now().date()
         leaderboard_df = leaderboard_df[~((leaderboard_df["Name"] == name) & (leaderboard_df["Timestamp"].dt.date == today_date))]
 
+        # Create a unique ID for each submission
+        unique_id = str(datetime.now().timestamp()) + str(random.randint(1000, 9999))
+
         # Record the step entry
         new_entry = pd.DataFrame({
+            "ID": [unique_id],
             "Name": [name],
             "Steps": [steps],
             "Timestamp": [datetime.now()],
@@ -149,7 +153,7 @@ else:
         filtered_df = leaderboard_df
     show_completed = False  # Hide checkmarks and Xs
 
-# Group by name to sum up steps
+# Group by name to sum up steps (for Weekly/Monthly)
 filtered_df = filtered_df.groupby("Name", as_index=False).agg({"Steps": "sum"})
 
 # Only show "Completed" column for Daily view
@@ -168,4 +172,32 @@ filtered_df.insert(0, "Rank", range(1, len(filtered_df) + 1))
 st.table(filtered_df[["Rank", "Name", "Steps"] + (["Completed"] if show_completed else [])])
 
 # Search for user profile
-st.subhea
+st.subheader("🔍 Search User Profile")
+search_name = st.text_input("Enter name to view their progress:")
+
+if search_name:
+    # Standardize the name before searching (title-case)
+    search_name = search_name.strip().title()
+
+    # Filter the DataFrame based on the formatted name
+    user_data = leaderboard_df[leaderboard_df["Name"] == search_name]
+
+    if not user_data.empty:
+        st.write(f"### Step History for {search_name}")
+        
+        # Sort the user data by Timestamp and reset index
+        user_data = user_data.sort_values(by="Timestamp", ascending=True).reset_index(drop=True)
+        
+        # Add the "Completed" column
+        user_data["Completed"] = user_data["Steps"] >= step_goal
+        user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
+        
+        # Add clickable proof links
+        user_data["Proof_Link"] = user_data["Proof"].apply(
+            lambda x: f'<a href="uploads/{x}" target="_blank">View proof</a>' if x and x != "No Proof" else "No Proof"
+        )
+        
+        # Display the user data table with clickable proof links
+        st.markdown(user_data.to_html(escape=False), unsafe_allow_html=True)
+    else:
+        st.warning("User not found. Try a different name.")
