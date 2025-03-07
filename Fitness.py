@@ -196,7 +196,14 @@ if search_name:
         
         # Display the user data table using markdown for clickable proof links
         for index, row in user_data.iterrows():
-            st.markdown(f"**{row['Timestamp']}** | **{row['Steps']} steps** | {row['Completed']} | {row['Proof_Link']}", unsafe_allow_html=True)
+            timestamp = row['Timestamp']
+            steps = row['Steps']
+            completed = row['Completed']
+            proof_link = row['Proof_Link']
+
+        #Show the timestamp, steps, completion status, and clickable proof links
+        st.markdown(f"**{timestamp}** | **{steps} steps** | {completed} | {proof_link}", unsafe_allow_html=True)
+        
         #If there's a proof image, display it directly in the app
         if row['Proof'] != "No Proof":
              # Display the image in the app directly
