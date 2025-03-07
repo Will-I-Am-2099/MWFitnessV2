@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 
 # Set background color
@@ -15,7 +15,7 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
- 
+
 # Ensure upload directory exists
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -143,13 +143,15 @@ if leaderboard_view == "Daily":
     show_completed = True  # Show checkmarks and Xs
 else:
     if leaderboard_view == "Weekly":
-        start_of_week = now - pd.Timedelta(days=now.weekday())  # Get the start of the current week (Monday)
-        filtered_df = leaderboard_df[leaderboard_df["Timestamp"] >= start_of_week]
+        filtered_df = leaderboard_df[leaderboard_df["Timestamp"] >= now - pd.Timedelta(days=7)]
     elif leaderboard_view == "Monthly":
         filtered_df = leaderboard_df[leaderboard_df["Timestamp"] >= now - pd.Timedelta(days=30)]
     else:
         filtered_df = leaderboard_df
     show_completed = False  # Hide checkmarks and Xs
+
+# Group by name to sum up steps
+filtered_df = filtered_df.groupby("Name", as_index=False).agg({"Steps": "sum"})
 
 # Only show "Completed" column for Daily view
 if show_completed:
@@ -160,11 +162,11 @@ else:
         filtered_df = filtered_df.drop(columns=["Completed"])  # Remove from Weekly/Monthly
 
 # Sort leaderboard
-filtered_df = filtered_df.sort_values(by="Timestamp", ascending=True).reset_index(drop=True)
+filtered_df = filtered_df.sort_values(by="Steps", ascending=False).reset_index(drop=True)
 filtered_df.insert(0, "Rank", range(1, len(filtered_df) + 1))
 
 # Display leaderboard
-st.table(filtered_df[["Rank", "Name", "Steps", "Timestamp"] + (["Completed"] if show_completed else [])])
+st.table(filtered_df[["Rank", "Name", "Steps"] + (["Completed"] if show_completed else [])])
 
 # Search for user profile
 st.subheader("🔍 Search User Profile")
@@ -180,29 +182,19 @@ if search_name:
     if not user_data.empty:
         st.write(f"### Step History for {search_name}")
         
-        # Sort the user data by Timestamp in ascending order (oldest first)
+        # Sort the user data by Timestamp and reset index
         user_data = user_data.sort_values(by="Timestamp", ascending=True).reset_index(drop=True)
         
         # Add the "Completed" column
         user_data["Completed"] = user_data["Steps"] >= step_goal
         user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
         
-        # For each step entry, show the timestamp, steps, completion status, and clickable link to proof
-        for index, row in user_data.iterrows():
-            timestamp = row['Timestamp']
-            steps = row['Steps']
-            completed = row['Completed']
-            proof_filename = row['Proof']
-            
-            # Display details for the entry (timestamp, steps, completion status)
-            st.write(f"**{timestamp}** | **{steps} steps** | {completed}")
-            
-            # If proof exists, display the clickable proof link
-            if proof_filename != "No Proof":
-                proof_link = f'<a href="/{UPLOAD_DIR}/{proof_filename}" target="_blank">View proof</a>'
-                st.markdown(proof_link, unsafe_allow_html=True)
-                
-                # Optionally, display the image inline as well
-                st.image(f"{UPLOAD_DIR}/{proof_filename}", caption=f"Proof for {row['Name']} at {timestamp}", use_column_width=True)
+        # Add clickable proof links
+        user_data["Proof_Link"] = user_data["Proof"].apply(
+            lambda x: f'<a href="uploads/{x}" target="_blank">View proof</a>' if x and x != "No Proof" else "No Proof"
+        )
+        
+        # Display the user data table
+        st.table(user_data[["Timestamp", "Steps", "Proof", "Completed", "Proof_Link"]])
     else:
-        st.warning("No records found for this user. Please try again with a different name.")
+        st.warning("User not found. Try a different name.")
