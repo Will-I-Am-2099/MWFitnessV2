@@ -196,6 +196,10 @@ if search_name:
         
         # Display the user data table using markdown for clickable proof links
         for index, row in user_data.iterrows():
-            st.table(user_data[["Timestamp", "Steps", "Completed", "Proof_Link"]])
+            st.markdown(f"**{row['Timestamp']}** | **{row['Steps']} steps** | {row['Completed']} | {row['Proof_Link']}", unsafe_allow_html=True)
+        #If there's a proof image, display it directly in the app
+        if row['Proof'] != "No Proof":
+             # Display the image in the app directly
+            st.image(f"{UPLOAD_DIR}/{row['Proof']}", caption=f"Proof for {row['Name']}", use_column_width=True)
     else:
         st.warning("User not found. Try a different name.")
