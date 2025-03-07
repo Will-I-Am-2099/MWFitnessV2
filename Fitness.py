@@ -118,8 +118,7 @@ if st.button("Submit Steps"):
             "Steps": [steps],
             "Timestamp": [datetime.now()],
             "Proof": [proof_filename] if proof_filename else "No Proof",
-            "stepgoalatsubmission": [step_goal], #v26 fix (saves step goal at submission)
-            "Completed": steps >= step_goal #v26 fix (saves the X and checkmark at submission)
+            "Completed": steps >= step_goal
         })
         leaderboard_df = pd.concat([leaderboard_df, new_entry], ignore_index=True)
 
@@ -169,32 +168,4 @@ filtered_df.insert(0, "Rank", range(1, len(filtered_df) + 1))
 st.table(filtered_df[["Rank", "Name", "Steps"] + (["Completed"] if show_completed else [])])
 
 # Search for user profile
-st.subheader("🔍 Search User Profile")
-search_name = st.text_input("Enter name to view their progress:")
-
-if search_name:
-    # Standardize the name before searching (title-case)
-    search_name = search_name.strip().title()
-
-    # Filter the DataFrame based on the formatted name
-    user_data = leaderboard_df[leaderboard_df["Name"] == search_name]
-
-    if not user_data.empty:
-        st.write(f"### Step History for {search_name}")
-        
-        # Sort the user data by Timestamp and reset index
-        user_data = user_data.sort_values(by="Timestamp", ascending=True).reset_index(drop=True)
-        
-        # Add the "Completed" column
-        user_data["Completed"] = user_data["Steps"] >= step_goal
-        user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
-        
-        # Add clickable proof links
-        user_data["Proof_Link"] = user_data["Proof"].apply(
-            lambda x: f'<a href="uploads/{x}" target="_blank">View proof</a>' if x and x != "No Proof" else "No Proof"
-        )
-        
-        # Display the user data table
-        st.markdown(user_data.to_html(escape=False), unsafe_allow_html=True)
-    else:
-        st.warning("User not found. Try a different name.")
+st.subhea
