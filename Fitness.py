@@ -225,6 +225,7 @@ if search_name:
         user_data["Completed"] = user_data["Steps"] >= step_goal
         user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
         st.table(user_data[["Timestamp", "Steps", "Proof", "Completed"]])
- 
+
+
 else:
     st.warning("User not found. Try a different name.")
