@@ -203,10 +203,10 @@ if search_name:
 
         #Show the timestamp, steps, completion status, and clickable proof links
         st.markdown(f"**{timestamp}** | **{steps} steps** | {completed} | {proof_link}", unsafe_allow_html=True)
-        
+
         #If there's a proof image, display it directly in the app
         if row['Proof'] != "No Proof":
              # Display the image in the app directly
-            st.image(f"{UPLOAD_DIR}/{row['Proof']}", caption=f"Proof for {row['Name']}", use_column_width=True)
+            st.image(f"{UPLOAD_DIR}/{row['Proof']}", caption=f"Proof for {row['Name']} at {timestamp}", use_column_width=True)
     else:
         st.warning("User not found. Try a different name.")
