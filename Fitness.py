@@ -182,31 +182,29 @@ if search_name:
     if not user_data.empty:
         st.write(f"### Step History for {search_name}")
         
-        # Sort the user data by Timestamp and reset index
-        user_data = user_data.sort_values(by="Timestamp", ascending=False).reset_index(drop=True)
+        # Sort the user data by Timestamp in ascending order (oldest first)
+        user_data = user_data.sort_values(by="Timestamp", ascending=True).reset_index(drop=True)
         
         # Add the "Completed" column
         user_data["Completed"] = user_data["Steps"] >= step_goal
         user_data["Completed"] = user_data["Completed"].map({True: "✔", False: "❌"})
         
-        # Add clickable proof links
-        user_data["Proof_Link"] = user_data["Proof"].apply(
-            lambda x: f'<a href="uploads/{x}" target="_blank">View proof</a>' if x else "No Proof"
-        )
-        
-        # Display the user data table using markdown for clickable proof links
+        # For each step entry, show the timestamp, steps, completion status, and clickable link to proof
         for index, row in user_data.iterrows():
             timestamp = row['Timestamp']
             steps = row['Steps']
             completed = row['Completed']
-            proof_link = row['Proof_Link']
-
-        #Show the timestamp, steps, completion status, and clickable proof links
-        st.markdown(f"**{timestamp}** | **{steps} steps** | {completed} | {proof_link}", unsafe_allow_html=True)
-
-        #If there's a proof image, display it directly in the app
-        if row['Proof'] != "No Proof":
-             # Display the image in the app directly
-            st.image(f"{UPLOAD_DIR}/{row['Proof']}", caption=f"Proof for {row['Name']} at {timestamp}", use_column_width=True)
+            proof_filename = row['Proof']
+            
+            # Display details for the entry (timestamp, steps, completion status)
+            st.write(f"**{timestamp}** | **{steps} steps** | {completed}")
+            
+            # If proof exists, display the clickable proof link
+            if proof_filename != "No Proof":
+                proof_link = f'<a href="/uploads/{proof_filename}" target="_blank">View proof</a>'
+                st.markdown(proof_link, unsafe_allow_html=True)
+                
+                # Optionally, display the image inline as well
+                st.image(f"uploads/{proof_filename}", caption=f"Proof for {row['Name']} at {timestamp}", use_column_width=True)
     else:
-        st.warning("User not found. Try a different name.")
+        st.warning("No records found for this user. Please try again with a different name.")
